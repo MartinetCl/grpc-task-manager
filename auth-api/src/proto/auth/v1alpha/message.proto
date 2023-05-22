@@ -20,6 +20,7 @@ message LoginResponse {
     INTERNAL = 3;
   }
   STATUS status = 3;
+  user.v1alpha.User user = 4;
 }
 
 message RefreshTokenRequest {
@@ -30,6 +31,7 @@ message RefreshTokenRequest {
 message RefreshTokenResponse {
   string refresh_token = 1;
   string jwt = 2;
+  string user_id = 3;
 }
 
 message ValidateRequest {

@@ -24,7 +24,7 @@ spec:
         - image: mohammaddocker/tm-front
           name: front
           ports:
-            - containerPort: 4000
+            - containerPort: 3000
           imagePullPolicy: Always
           volumeMounts:
             - name: tls
@@ -49,11 +49,6 @@ spec:
                 configMapKeyRef:
                   name: api-map
                   key: TASK_API_URL
-            - name: TASK_API_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: api-map
-                  key: TASK_API_URL
             - name: secure
               value: "true"
             - name: ROOT_CA
@@ -62,6 +57,8 @@ spec:
               value: "/certs/certificate.key"
             - name: FRONT_CERT
               value: "/certs/certificate.crt"
+            - name: JAEGER_URL
+              value: "http://my-jaeger-collector.grpc-tm:4318/v1/traces"
       volumes:
       - name: tls
         csi:
@@ -78,3 +75,17 @@ spec:
               path: certificate.key
             - key: tls.crt
               path: certificate.crt 
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    app: front
+  ports:
+  - protocol: "TCP"
+    port: 80
+    targetPort: 3000
+  type: LoadBalancer

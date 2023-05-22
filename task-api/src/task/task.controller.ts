@@ -10,8 +10,10 @@ import {
   ListTasksResponse,
   StreamTasksRequest,
   StreamTasksResponse,
-  TaskResponse,
-} from '../stubs/task/v1beta/task';
+  GetTaskResponse,
+  CreateTaskResponse,
+  DeleteTaskResponse,
+} from '../stubs/task/v1beta/request';
 import { Observable } from 'rxjs';
 import { ProfanityService } from 'src/profanity/profanity.service';
 import { StreamsService } from 'src/streams/streams.service';
@@ -32,7 +34,7 @@ export class TaskController {
   ) {}
 
   @GrpcMethod('TaskService')
-  async GetTask(request: GetTaskRequest): Promise<TaskResponse> {
+  async GetTask(request: GetTaskRequest): Promise<GetTaskResponse> {
     const name = request.name;
 
     try {
@@ -61,7 +63,7 @@ export class TaskController {
 
   @UseGuards(GrpcAuthGuard)
   @GrpcMethod('TaskService')
-  async CreateTask(request: CreateTaskRequest): Promise<TaskResponse> {
+  async CreateTask(request: CreateTaskRequest): Promise<CreateTaskResponse> {
     try {
       await this.validateDto(request.task, CreateTaskDto);
       const nTask = {
@@ -88,10 +90,7 @@ export class TaskController {
       return { task: pbTask };
     } catch (error) {
       this.logger.error(error);
-      throw new RpcException({
-        code: status.PERMISSION_DENIED,
-        message: (error as RpcException).message || error,
-      });
+      throw new RpcException(error);
     }
   }
 
@@ -129,7 +128,7 @@ export class TaskController {
   // }
 
   @GrpcMethod('TaskService')
-  async DeleteTask(request: DeleteTaskRequest): Promise<TaskResponse> {
+  async DeleteTask(request: DeleteTaskRequest): Promise<DeleteTaskResponse> {
     try {
       const task = await this.taskService.deleteTask(request.name);
       const pbTask = this.taskService.toTaskPb(task);
@@ -159,6 +158,12 @@ export class TaskController {
   }
 
   private async validateDto(data: any, Dto: any) {
+    if (!data) {
+      throw new RpcException({
+        message: 'No data provided',
+        code: status.INVALID_ARGUMENT,
+      });
+    }
     const dto = plainToInstance(Dto, data);
     const errors = await validate(dto);
 

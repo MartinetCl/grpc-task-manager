@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { UserRole } from "../../user/v1alpha/message";
+import { User, UserRole } from "../../user/v1alpha/message";
 
 export const protobufPackage = "auth.v1alpha";
 
@@ -13,6 +13,7 @@ export interface LoginResponse {
   refreshToken?: string;
   jwt?: string;
   status?: LoginResponse_STATUS;
+  user?: User;
 }
 
 export enum LoginResponse_STATUS {
@@ -31,6 +32,7 @@ export interface RefreshTokenRequest {
 export interface RefreshTokenResponse {
   refreshToken?: string;
   jwt?: string;
+  userId?: string;
 }
 
 export interface ValidateRequest {

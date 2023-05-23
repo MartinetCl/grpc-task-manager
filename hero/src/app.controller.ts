@@ -18,43 +18,54 @@ import { GrpcMethod } from '@nestjs/microservices';
 import { Metadata } from '@grpc/grpc-js';
 import { Observable } from 'rxjs';
 
-const heroes: Hero[] = [];
-
 @Controller()
 @HeroCRUDServiceControllerMethods()
 export class AppController implements HeroCRUDServiceController {
   constructor(private readonly appService: AppService) {}
-  get(
-    request: GetRequest,
-    metadata?: Metadata,
-  ): GetResponse | Observable<GetResponse> | Promise<GetResponse> {
-    throw new Error('Method not implemented.');
+  async get(request: GetRequest, metadata?: Metadata): Promise<GetResponse> {
+    let hero: Hero;
+    let heroes: Hero[] = [];
+
+    if (request.id) {
+      hero = await this.appService.findById(request.id);
+      return { heroes: [hero] };
+    } else if (request.name) {
+      hero = await this.appService.findByName(request.name);
+      return { heroes: [hero] };
+    } else {
+      heroes = await this.appService.findAll();
+      return { heroes };
+    }
   }
-  update(
+  async update(
     request: UpdateRequest,
     metadata?: Metadata,
-  ): UpdateResponse | Observable<UpdateResponse> | Promise<UpdateResponse> {
-    throw new Error('Method not implemented.');
+  ): Promise<UpdateResponse> {
+    const id = request.id;
+
+    Object.keys(request).forEach(
+      (key) => request[key] === undefined && delete request[key],
+    );
+
+    delete request.id;
+
+    const hero = await this.appService.update(id, request);
+
+    return { hero };
   }
-  delete(
+  async delete(
     request: DeleteRequest,
     metadata?: Metadata,
-  ): DeleteResponse | Observable<DeleteResponse> | Promise<DeleteResponse> {
-    throw new Error('Method not implemented.');
+  ): Promise<DeleteResponse> {
+    const hero = await this.appService.delete(request.id);
+
+    return { hero };
   }
 
   @GrpcMethod(HERO_CR_UD_SERVICE_NAME)
   async add(request: AddRequest): Promise<AddResponse> {
-    const hero = {
-      ...request,
-      id: heroes.length + 1,
-      hp: 100,
-    };
+    const hero = await this.appService.create(request as any);
 
-    heroes.push(hero);
-
-    return {
-      hero,
-    };
+    return { hero };
   }
 }

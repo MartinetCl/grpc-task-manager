@@ -6,7 +6,7 @@ import { addReflectionToGrpcConfig } from 'nestjs-grpc-reflection';
 export const grpcConfig = addReflectionToGrpcConfig({
   transport: Transport.GRPC,
   options: {
-    url: '0.0.0.0:6000',
+    url: '0.0.0.0:5000',
     package: HERO_V1ALPHA_PACKAGE_NAME,
     protoPath: join(__dirname, 'proto/hero/v1alpha/hero.proto'),
   },
